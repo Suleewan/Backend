@@ -1,0 +1,123 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Drainag_issues {
+  id                Int       @id @default(autoincrement())
+  report_id         Int
+  sub_issue         String
+  description       String?
+  image_url         String?
+  status            String
+  resolution_detail String?
+  update_at         DateTime
+  severity          Int
+  affected_people   Int
+  urgency           Int
+  economic_impact   Int
+  total_score       Decimal
+  resolved_a        DateTime?
+  Reporters         Reporters @relation(fields: [report_id], references: [id], onDelete: Cascade)
+}
+
+model Electricity_issues {
+  id                Int       @id @default(autoincrement())
+  report_id         Int
+  sub_issue         String
+  description       String?
+  image_url         String?
+  status            String
+  resolution_detail String?
+  update_at         DateTime
+  severity          Int
+  affected_people   Int
+  urgency           Int
+  economic_impact   Int
+  total_score       Decimal
+  resolved_a        DateTime?
+  Reporters         Reporters @relation(fields: [report_id], references: [id], onDelete: Cascade)
+}
+
+model Health_issues {
+  id                Int       @id @default(autoincrement())
+  report_id         Int
+  sub_issue         String
+  description       String?
+  image_url         String?
+  status            String
+  resolution_detail String?
+  update_at         DateTime
+  severity          Int
+  affected_people   Int
+  urgency           Int
+  economic_impact   Int
+  total_score       Decimal
+  resolved_a        DateTime?
+  Reporters         Reporters @relation(fields: [report_id], references: [id], onDelete: Cascade)
+}
+
+model Reporters {
+  id                 Int                  @id @default(autoincrement())
+  fullname           String
+  phone              String
+  province           String
+  district           String
+  subdistrict        String
+  village            String
+  Drainag_issues     Drainag_issues[]
+  Electricity_issues Electricity_issues[]
+  Health_issues      Health_issues[]
+  Roade_issues       Roade_issues[]
+  Water_issues       Water_issues[]
+}
+
+model Roade_issues {
+  id                Int       @id @default(autoincrement())
+  report_id         Int
+  sub_issue         String
+  description       String?
+  image_url         String?
+  status            String
+  resolution_detail String?
+  update_at         DateTime
+  severity          Int
+  affected_people   Int
+  urgency           Int
+  economic_impact   Int
+  total_score       Decimal
+  resolved_a        DateTime?
+  Reporters         Reporters @relation(fields: [report_id], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id       Int     @id @default(autoincrement())
+  email    String  @unique
+  password String?
+  name     String?
+  picture  String?
+  role     String  @default("user")
+}
+
+model Water_issues {
+  id                Int       @id @default(autoincrement())
+  report_id         Int
+  sub_issue         String
+  description       String?
+  image_url         String?
+  status            String
+  resolution_detail String?
+  update_at         DateTime
+  severity          Int
+  affected_people   Int
+  urgency           Int
+  economic_impact   Int
+  total_score       Decimal
+  resolved_a        DateTime?
+  Reporters         Reporters @relation(fields: [report_id], references: [id], onDelete: Cascade)
+}
