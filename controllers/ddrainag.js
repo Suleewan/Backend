@@ -48,7 +48,7 @@ exports.DListlf = async (req, res) => {
        };
      });
  
-     // ส่งผลลัพธ์กลับ
+   
      res.json(result);
      console.log(issues);
  
@@ -125,14 +125,14 @@ exports.DListlsuesf = async (req, res) => {
          sub_issue: true,
          description: true,
          status: true,
-         update_at: true  // เปลี่ยนจาก updated_at เป็น update_at
+         update_at: true  
        },
        orderBy: {
-         update_at: "desc",  // เปลี่ยนจาก updated_at เป็น update_at
+         update_at: "desc",  
        }
      });
  
-     // จัดกลุ่มข้อมูลตามประเภทของปัญหา (sub_issue)
+     
      const groupedResults = {};
  
      issues.forEach(issue => {
@@ -148,7 +148,7 @@ exports.DListlsuesf = async (req, res) => {
        });
      });
  
-     // ส่งผลลัพธ์กลับไปยังผู้ใช้ในรูปแบบ JSON
+     
      res.json(groupedResults);
  
    } catch (err) {
@@ -170,14 +170,14 @@ exports.DListlsuesfNG = async (req, res) => {
          sub_issue: true,
          description: true,
          status: true,
-         update_at: true  // เปลี่ยนจาก updated_at เป็น update_at
+         update_at: true  
        },
        orderBy: {
-         update_at: "desc",  // เปลี่ยนจาก updated_at เป็น update_at
+         update_at: "desc",  
        }
      });
  
-     // จัดกลุ่มข้อมูลตามประเภทของปัญหา (sub_issue)
+     
      const groupedResults = {};
  
      issues.forEach(issue => {
@@ -193,7 +193,7 @@ exports.DListlsuesfNG = async (req, res) => {
        });
      });
  
-     // ส่งผลลัพธ์กลับไปยังผู้ใช้ในรูปแบบ JSON
+     
      res.json(groupedResults);
  
    } catch (err) {
@@ -204,7 +204,7 @@ exports.DListlsuesfNG = async (req, res) => {
  
 exports.DProgressL = async (req, res) => {
   try {
-    // ดึงข้อมูลจาก water_issues ที่เกี่ยวข้องกับหมู่บ้าน "บ้านไผ่เงิน" และสถานะ "กำลังดำเนินการ"
+    
     const issues = await prisma.drainag_issues.findMany({
       where: {
         status: 'กำลังดำเนินการ',
@@ -214,22 +214,22 @@ exports.DProgressL = async (req, res) => {
       },
       select: {
         sub_issue: true,
-        description: true,  // เพิ่มคำอธิบายปัญหา
-        resolution_detail: true,  // เพิ่มข้อมูลการแก้ไข
-        status: true,  // เพิ่มสถานะของปัญหา
-        update_at: true,  // เวลาที่ข้อมูลถูกอัพเดท
+        description: true,  
+        resolution_detail: true,  
+        status: true,  
+        update_at: true,  
         Reporters: {
           select: {
-            fullname: true  // ดึงชื่อผู้รายงานจากตาราง reporters
+            fullname: true  
           }
         }
       },
       orderBy: {
-        update_at: 'desc',  // เรียงตามเวลาที่อัพเดทล่าสุด
+        update_at: 'desc',  
       }
     });
 
-    // จัดกลุ่มข้อมูลตามประเภทของปัญหา (sub_issue)
+    
     const groupedResults = {};
 
     issues.forEach(issue => {
@@ -237,18 +237,18 @@ exports.DProgressL = async (req, res) => {
       if (!groupedResults[subIssue]) {
         groupedResults[subIssue] = [];
       }
-      // เก็บข้อมูลในรูปแบบที่ต้องการ
+      
       groupedResults[subIssue].push({
         sub_issue: issue.sub_issue,
-        description: issue.description,  // เพิ่มคำอธิบาย
-        resolution_detail: issue.resolution_detail,  // เพิ่มรายละเอียดการแก้ไข
-        status: issue.status,  // เพิ่มสถานะ
-        updated_at: issue.update_at,  // เพิ่มเวลาอัพเดท
-        reporter_fullname: issue.report.fullname  // เพิ่มชื่อผู้รายงาน
+        description: issue.description,  
+        resolution_detail: issue.resolution_detail,  
+        status: issue.status,  
+        updated_at: issue.update_at,  
+        reporter_fullname: issue.Reporters.fullname  
       });
     });
 
-    // ส่งผลลัพธ์กลับไปยังผู้ใช้ในรูปแบบ JSON
+    
     res.json(groupedResults);
 
   } catch (err) {
@@ -262,19 +262,19 @@ exports.DProgressAll = async (req, res) => {
     const issues = await prisma.drainag_issues.groupBy({
       by: ['sub_issue', 'status'],
       where: {
-        status: 'กำลังดำเนินการ', // สถานะ "กำลังดำเนินการ"
+        status: 'กำลังดำเนินการ', 
       },
       _count: {
-        sub_issue: true // นับจำนวนของแต่ละประเภทปัญหา
+        sub_issue: true 
       },
       orderBy: {
         _count: {
-          sub_issue: 'desc' // เรียงจากจำนวนมากไปน้อย
+          sub_issue: 'desc' 
         }
       }
     });
 
-    // คำนวณคะแนนรวม
+    
     const result = issues.map(issue => {
       const count = issue._count.sub_issue;
 
@@ -301,7 +301,7 @@ exports.DProgressAll = async (req, res) => {
       };
     });
 
-    // ส่งผลลัพธ์กลับ
+    
     res.json(result);
 
   } catch (err) {
@@ -313,7 +313,7 @@ exports.DProgressAll = async (req, res) => {
 
 exports.DProgressL2  = async (req, res) => {
   try {
-    // ดึงข้อมูลจาก drainag_issues ที่เกี่ยวข้องกับหมู่บ้าน "บ้านไผ่เงิน" และสถานะ "แก้ไขสำเร็จ"
+
     const issues = await prisma.drainag_issues.findMany({
       where: {
         status: 'กำลังดำเนินการ',
@@ -323,22 +323,21 @@ exports.DProgressL2  = async (req, res) => {
       },
       select: {
         sub_issue: true,
-        description: true,  // เพิ่มคำอธิบายปัญหา
-        resolution_detail: true,  // เพิ่มข้อมูลการแก้ไข
-        status: true,  // เพิ่มสถานะของปัญหา
-        update_at: true,  // เวลาที่ข้อมูลถูกอัพเดท
+        description: true,  
+        resolution_detail: true,  
+        status: true,  
+        update_at: true, 
         Reporters: {
           select: {
-            fullname: true  // ดึงชื่อผู้รายงานจากตาราง reporters
+            fullname: true  
           }
         }
       },
       orderBy: {
-        update_at: 'desc',  // เรียงตามเวลาที่อัพเดทล่าสุด
+        update_at: 'desc',  
       }
     });
 
-    // จัดกลุ่มข้อมูลตามประเภทของปัญหา (sub_issue)
     const groupedResults = {};
 
     issues.forEach(issue => {
@@ -346,18 +345,18 @@ exports.DProgressL2  = async (req, res) => {
       if (!groupedResults[subIssue]) {
         groupedResults[subIssue] = [];
       }
-      // เก็บข้อมูลในรูปแบบที่ต้องการ
+      
       groupedResults[subIssue].push({
         sub_issue: issue.sub_issue,
-        description: issue.description,  // เพิ่มคำอธิบาย
-        resolution_detail: issue.resolution_detail,  // เพิ่มรายละเอียดการแก้ไข
-        status: issue.status,  // เพิ่มสถานะ
-        updated_at: issue.update_at,  // เพิ่มเวลาอัพเดท
-        reporter_fullname: issue.report.fullname  // เพิ่มชื่อผู้รายงาน
+        description: issue.description,  
+        resolution_detail: issue.resolution_detail, 
+        status: issue.status,  
+        updated_at: issue.update_at,  
+        reporter_fullname: issue.Reporters.fullname
       });
     });
 
-    // ส่งผลลัพธ์กลับไปยังผู้ใช้ในรูปแบบ JSON
+    
     res.json(groupedResults);
     
 
@@ -369,7 +368,7 @@ exports.DProgressL2  = async (req, res) => {
  
 exports.DProgressNG2  = async (req, res) => {
   try {
-    // ดึงข้อมูลจาก drainag_issues ที่เกี่ยวข้องกับหมู่บ้าน "บ้านไผ่เงิน" และสถานะ "แก้ไขสำเร็จ"
+    
     const issues = await prisma.drainag_issues.findMany({
       where: {
         status: 'กำลังดำเนินการ',
@@ -379,22 +378,21 @@ exports.DProgressNG2  = async (req, res) => {
       },
       select: {
         sub_issue: true,
-        description: true,  // เพิ่มคำอธิบายปัญหา
-        resolution_detail: true,  // เพิ่มข้อมูลการแก้ไข
-        status: true,  // เพิ่มสถานะของปัญหา
-        update_at: true,  // เวลาที่ข้อมูลถูกอัพเดท
+        description: true,  
+        resolution_detail: true,  
+        status: true,  
+        update_at: true,  
         Reporters: {
           select: {
-            fullname: true  // ดึงชื่อผู้รายงานจากตาราง reporters
+            fullname: true  
           }
         }
       },
       orderBy: {
-        update_at: 'desc',  // เรียงตามเวลาที่อัพเดทล่าสุด
+        update_at: 'desc',  
       }
     });
 
-    // จัดกลุ่มข้อมูลตามประเภทของปัญหา (sub_issue)
     const groupedResults = {};
 
     issues.forEach(issue => {
@@ -402,18 +400,17 @@ exports.DProgressNG2  = async (req, res) => {
       if (!groupedResults[subIssue]) {
         groupedResults[subIssue] = [];
       }
-      // เก็บข้อมูลในรูปแบบที่ต้องการ
+      
       groupedResults[subIssue].push({
         sub_issue: issue.sub_issue,
-        description: issue.description,  // เพิ่มคำอธิบาย
-        resolution_detail: issue.resolution_detail,  // เพิ่มรายละเอียดการแก้ไข
-        status: issue.status,  // เพิ่มสถานะ
-        updated_at: issue.update_at,  // เพิ่มเวลาอัพเดท
-        reporter_fullname: issue.report.fullname  // เพิ่มชื่อผู้รายงาน
+        description: issue.description,  
+        resolution_detail: issue.resolution_detail, 
+        status: issue.status, 
+        updated_at: issue.update_at,  
+        reporter_fullname: issue.Reporters.fullname  
       });
     });
 
-    // ส่งผลลัพธ์กลับไปยังผู้ใช้ในรูปแบบ JSON
     res.json(groupedResults);
     
 
@@ -428,22 +425,22 @@ exports.DSucceedL = async (req, res) => {
      const issues = await prisma.drainag_issues.groupBy({
        by: ['sub_issue', 'status'],
        where: {
-         status: 'แก้ไขสำเร็จแล้ว', // สถานะยังไม่ได้รับการแก้ไข
+         status: 'แก้ไขสำเร็จแล้ว', 
          Reporters: {
-           village: 'บ้านไผ่ล้อม' // หมู่บ้านที่ต้องการค้นหา
+           village: 'บ้านไผ่ล้อม'
          }
        },
        _count: {
-         sub_issue: true // นับจำนวนของแต่ละประเภทปัญหา
+         sub_issue: true
        },
        orderBy: {
          _count: {
-           sub_issue: 'desc' // เรียงจากจำนวนมากไปน้อย
+           sub_issue: 'desc' 
          }
        }
      });
  
-     // คำนวณคะแนนรวม
+     
      const result = issues.map(issue => {
        const count = issue._count.sub_issue;
  
@@ -470,7 +467,7 @@ exports.DSucceedL = async (req, res) => {
        };
      });
  
-     // ส่งผลลัพธ์กลับ
+    
      res.json(result);
  
    } catch (err) {
@@ -484,19 +481,19 @@ exports.DSucceedAll = async (req, res) => {
     const issues = await prisma.drainag_issues.groupBy({
       by: ['sub_issue', 'status'],
       where: {
-        status: 'แก้ไขสำเร็จแล้ว', // สถานะ "แก้ไขสำเร็จแล้ว"
+        status: 'แก้ไขสำเร็จแล้ว', 
       },
       _count: {
-        sub_issue: true // นับจำนวนของแต่ละประเภทปัญหา
+        sub_issue: true 
       },
       orderBy: {
         _count: {
-          sub_issue: 'desc' // เรียงจากจำนวนมากไปน้อย
+          sub_issue: 'desc' 
         }
       }
     });
 
-    // คำนวณคะแนนรวม
+   
     const result = issues.map(issue => {
       const count = issue._count.sub_issue;
 
@@ -523,7 +520,7 @@ exports.DSucceedAll = async (req, res) => {
       };
     });
 
-    // ส่งผลลัพธ์กลับ
+  
     res.json(result);
 
   } catch (err) {
@@ -534,7 +531,6 @@ exports.DSucceedAll = async (req, res) => {
 
 exports.DSucceedL2 = async (req, res) => {
   try {
-    // ดึงข้อมูลจาก water_issues ที่เกี่ยวข้องกับหมู่บ้าน "บ้านไผ่เงิน" และสถานะ "แก้ไขสำเร็จ"
     const issues = await prisma.drainag_issues.findMany({
       where: {
         status: 'แก้ไขสำเร็จแล้ว',
@@ -544,22 +540,21 @@ exports.DSucceedL2 = async (req, res) => {
       },
       select: {
         sub_issue: true,
-        description: true,  // เพิ่มคำอธิบายปัญหา
-        resolution_detail: true,  // เพิ่มข้อมูลการแก้ไข
-        status: true,  // เพิ่มสถานะของปัญหา
-        update_at: true,  // เวลาที่ข้อมูลถูกอัพเดท
+        description: true,  
+        resolution_detail: true,  
+        status: true,  
+        update_at: true,  
         Reporters: {
           select: {
-            fullname: true  // ดึงชื่อผู้รายงานจากตาราง reporters
+            fullname: true  
           }
         }
       },
       orderBy: {
-        update_at: 'desc',  // เรียงตามเวลาที่อัพเดทล่าสุด
+        update_at: 'desc',  
       }
     });
 
-    // จัดกลุ่มข้อมูลตามประเภทของปัญหา (sub_issue)
     const groupedResults = {};
 
     issues.forEach(issue => {
@@ -567,14 +562,14 @@ exports.DSucceedL2 = async (req, res) => {
       if (!groupedResults[subIssue]) {
         groupedResults[subIssue] = [];
       }
-      // เก็บข้อมูลในรูปแบบที่ต้องการ
+      
       groupedResults[subIssue].push({
         sub_issue: issue.sub_issue,
-        description: issue.description,  // เพิ่มคำอธิบาย
-        resolution_detail: issue.resolution_detail,  // เพิ่มรายละเอียดการแก้ไข
-        status: issue.status,  // เพิ่มสถานะ
-        updated_at: issue.update_at,  // เพิ่มเวลาอัพเดท
-        reporter_fullname: issue.report.fullname  // เพิ่มชื่อผู้รายงาน
+        description: issue.description,  
+        resolution_detail: issue.resolution_detail,  
+        status: issue.status,  
+        updated_at: issue.update_at,  
+        reporter_fullname: issue.Reporters.fullname  
       });
     });
 
@@ -627,7 +622,7 @@ exports.DSucceedNG2 = async (req, res) => {
         resolution_detail: issue.resolution_detail,  
         status: issue.status, 
         updated_at: issue.update_at,  
-        reporter_fullname: issue.report.fullname  
+        reporter_fullname: issue.Reporters.fullname 
       });
     });
 

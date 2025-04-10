@@ -19,22 +19,19 @@ exports.register = async (req, res) => {
       return res.status(400).json({ message: "Password is required!!!" });
     }
 
-    // ตรวจสอบว่าอีเมลมีในระบบหรือไม่
     const user = await prisma.user.findFirst({  
       where: {
         email: email
       }
     });
 
-    // ถ้าเจออีเมลที่ซ้ำในระบบ
     if (user) {
       return res.status(400).json({ message: "Email already exists!!!" });
     }
 
-    // แฮชรหัสผ่านก่อนที่จะบันทึก
+ 
     const hashPassword = await bcrypt.hash(password, 10);
 
-    // สร้างผู้ใช้งานใหม่
     await prisma.user.create({
       data: {
         email: email,
@@ -44,14 +41,14 @@ exports.register = async (req, res) => {
 
     res.send('Register Success');
   } catch (err) {
-    console.log(err);  // แสดงข้อผิดพลาดที่เกิดขึ้น
+    console.log(err); 
     res.status(500).json({ message: "Server Error" });
   }
 };
 
 exports.logout = async (req, res) => {
   try {
-    // ไม่จำเป็นต้องทำอะไรในฝั่งเซิร์ฟเวอร์ ถ้าเป็นการออกจากระบบฝั่งผู้ใช้ที่ต้องลบโทเค็นจากฝั่งผู้ใช้
+
     res.status(200).json({ message: 'Logout successful' });
   } catch (err) {
     console.error(err);
@@ -69,13 +66,11 @@ exports.login = async (req, res) => {
       return res.status(400).json({ message: 'User not found' });
     }
 
-    // ตรวจสอบรหัสผ่าน (สมมติว่าใช้ bcrypt สำหรับการตรวจสอบรหัสผ่านที่ถูกเข้ารหัส)
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ message: 'Password Invalid' });
     }
 
-    // สร้าง JWT token และตอบกลับ
     const token = jwt.sign({ userId: user.id }, 'your_secret_key', { expiresIn: '1d' });
     res.status(200).json({ message: 'Login successful', token });
 
@@ -90,44 +85,39 @@ exports.getReportIssues = async (req, res) => {
 
     const report_id = parseInt(req.params.report_id);
 
-    // ตรวจสอบว่า report_id เป็นตัวเลขหรือไม่
     if (isNaN(report_id)) {
       return res.status(400).json({ message: 'Invalid report_id' });
     }
 
-    // ดึงข้อมูลจากทุกตารางที่เกี่ยวข้องกับ report_id
     const reporterWithIssues = await prisma.reporters.findUnique({
       where: {
-        id: report_id,  // ค้นหาผู้รายงานตาม report_id
+        id: report_id,  
       },
       include: {
-        Roade_issues: true,         // ดึงข้อมูลจากตาราง Roade_issues
-        Drainag_issues: true,       // ดึงข้อมูลจากตาราง Drainag_issues
-        Electricity_issues: true,   // ดึงข้อมูลจากตาราง Electricity_issues
-        Water_issues: true,         // ดึงข้อมูลจากตาราง Water_issues
-        Health_issues: true         // ดึงข้อมูลจากตาราง Health_issues
+        Roade_issues: true,         
+        Drainag_issues: true,       
+        Electricity_issues: true,  
+        Water_issues: true,         
+        Health_issues: true       
       }
     });
 
-    // ตรวจสอบว่าไม่พบผู้รายงาน
     if (!reporterWithIssues) {
       return res.status(404).json({ message: `No reporter found with report_id: ${report_id}` });
     }
 
-    // ส่งผลลัพธ์ทั้งหมดกลับไปยังผู้ใช้
     res.json(reporterWithIssues);
 
   } catch (err) {
-    console.error('Error occurred:', err);  // พิมพ์ข้อผิดพลาดใน log
-    res.status(500).json({ message: 'Server Error', error: err.message });  // ส่งข้อความข้อผิดพลาดกลับ
+    console.error('Error occurred:', err); 
+    res.status(500).json({ message: 'Server Error', error: err.message });  
   }
 };
  
 exports.ListL = async (req, res) => {
   try {
-    const village = 'บ้านไผ่ล้อม'; // หมู่บ้านที่ต้องการตรวจสอบ
-
-    // ดึงข้อมูลจาก Roade_issues ที่มีสถานะ "ยังไม่ได้รับการแก้ไข" และมาจากหมู่บ้าน "บ้านไผ่ล้อม"
+    const village = 'บ้านไผ่ล้อม'; 
+   
     const roadIssues = await prisma.roade_issues.findMany({
       where: {
         status: 'ยังไม่ได้รับการแก้ไข',
@@ -136,11 +126,11 @@ exports.ListL = async (req, res) => {
         }
       },
       orderBy: {
-        update_at: 'desc' // เรียงลำดับจากล่าสุด
+        update_at: 'desc' 
       }
     });
 
-    // ดึงข้อมูลจาก Drainag_issues ที่มีสถานะ "ยังไม่ได้รับการแก้ไข" และมาจากหมู่บ้าน "บ้านไผ่ล้อม"
+  
     const drainageIssues = await prisma.drainag_issues.findMany({
       where: {
         status: 'ยังไม่ได้รับการแก้ไข',
@@ -149,11 +139,11 @@ exports.ListL = async (req, res) => {
         }
       },
       orderBy: {
-        update_at: 'desc' // เรียงลำดับจากล่าสุด
+        update_at: 'desc' 
       }
     });
 
-    // ดึงข้อมูลจาก Electricity_issues ที่มีสถานะ "ยังไม่ได้รับการแก้ไข" และมาจากหมู่บ้าน "บ้านไผ่ล้อม"
+    
     const electricityIssues = await prisma.electricity_issues.findMany({
       where: {
         status: 'ยังไม่ได้รับการแก้ไข',
@@ -162,11 +152,11 @@ exports.ListL = async (req, res) => {
         }
       },
       orderBy: {
-        update_at: 'desc' // เรียงลำดับจากล่าสุด
+        update_at: 'desc' 
       }
     });
 
-    // ดึงข้อมูลจาก Water_issues ที่มีสถานะ "ยังไม่ได้รับการแก้ไข" และมาจากหมู่บ้าน "บ้านไผ่ล้อม"
+   
     const waterIssues = await prisma.water_issues.findMany({
       where: {
         status: 'ยังไม่ได้รับการแก้ไข',
@@ -175,11 +165,11 @@ exports.ListL = async (req, res) => {
         }
       },
       orderBy: {
-        update_at: 'desc' // เรียงลำดับจากล่าสุด
+        update_at: 'desc' 
       }
     });
 
-    // ดึงข้อมูลจาก Health_issues ที่มีสถานะ "ยังไม่ได้รับการแก้ไข" และมาจากหมู่บ้าน "บ้านไผ่ล้อม"
+   
     const healthIssues = await prisma.health_issues.findMany({
       where: {
         status: 'ยังไม่ได้รับการแก้ไข',
@@ -188,18 +178,18 @@ exports.ListL = async (req, res) => {
         }
       },
       orderBy: {
-        update_at: 'desc' // เรียงลำดับจากล่าสุด
+        update_at: 'desc' 
       }
     });
 
-    // คำนวณจำนวนปัญหาทั้งหมดในแต่ละประเภท
+    
     const roadIssuesCount = roadIssues.length;
     const drainageIssuesCount = drainageIssues.length;
     const electricityIssuesCount = electricityIssues.length;
     const waterIssuesCount = waterIssues.length;
     const healthIssuesCount = healthIssues.length;
 
-    // ส่งผลลัพธ์การนับข้อมูลในรูปแบบ JSON
+    
     const result = {
       roadIssues: { count: roadIssuesCount, status: "ยังไม่ได้รับการแก้ไข" },
       drainageIssues: { count: drainageIssuesCount, status: "ยังไม่ได้รับการแก้ไข" },
@@ -208,23 +198,22 @@ exports.ListL = async (req, res) => {
       healthIssues: { count: healthIssuesCount, status: "ยังไม่ได้รับการแก้ไข" }
     };
 
-    // เรียงลำดับจากมากไปน้อยตามจำนวนปัญหาที่ต้องการ
+   
     const sortedResults = Object.entries(result).sort((a, b) => b[1].count - a[1].count);
 
-    // ส่งผลลัพธ์เรียงลำดับให้ผู้ใช้
-    res.status(200).json(Object.fromEntries(sortedResults));  // ส่งผลลัพธ์กลับไปยังผู้ใช้
+ 
+    res.status(200).json(Object.fromEntries(sortedResults)); 
 
   } catch (err) {
-    console.error(err);  // แสดงข้อผิดพลาดใน console
-    res.status(500).json({ message: "Server Error" });  // ส่งข้อความข้อผิดพลาด
+    console.error(err);  
+    res.status(500).json({ message: "Server Error" });  
   }
 };
 
 exports.Listng = async (req, res) => {
   try {
-    const village = 'บ้านไผ่เงิน'; // หมู่บ้านที่ต้องการตรวจสอบ
+    const village = 'บ้านไผ่เงิน'; 
 
-    // ดึงข้อมูลจาก Roade_issues ที่มีสถานะ "ยังไม่ได้รับการแก้ไข" และมาจากหมู่บ้าน "บ้านไผ่ล้อม"
     const roadIssues = await prisma.roade_issues.findMany({
       where: {
         status: 'ยังไม่ได้รับการแก้ไข',
@@ -233,11 +222,10 @@ exports.Listng = async (req, res) => {
         }
       },
       orderBy: {
-        update_at: 'desc' // เรียงลำดับจากล่าสุด
+        update_at: 'desc' 
       }
     });
 
-    // ดึงข้อมูลจาก Drainag_issues ที่มีสถานะ "ยังไม่ได้รับการแก้ไข" และมาจากหมู่บ้าน "บ้านไผ่ล้อม"
     const drainageIssues = await prisma.drainag_issues.findMany({
       where: {
         status: 'ยังไม่ได้รับการแก้ไข',
@@ -246,11 +234,10 @@ exports.Listng = async (req, res) => {
         }
       },
       orderBy: {
-        update_at: 'desc' // เรียงลำดับจากล่าสุด
+        update_at: 'desc' 
       }
     });
 
-    // ดึงข้อมูลจาก Electricity_issues ที่มีสถานะ "ยังไม่ได้รับการแก้ไข" และมาจากหมู่บ้าน "บ้านไผ่ล้อม"
     const electricityIssues = await prisma.electricity_issues.findMany({
       where: {
         status: 'ยังไม่ได้รับการแก้ไข',
@@ -259,11 +246,10 @@ exports.Listng = async (req, res) => {
         }
       },
       orderBy: {
-        update_at: 'desc' // เรียงลำดับจากล่าสุด
+        update_at: 'desc'
       }
     });
 
-    // ดึงข้อมูลจาก Water_issues ที่มีสถานะ "ยังไม่ได้รับการแก้ไข" และมาจากหมู่บ้าน "บ้านไผ่ล้อม"
     const waterIssues = await prisma.water_issues.findMany({
       where: {
         status: 'ยังไม่ได้รับการแก้ไข',
@@ -272,11 +258,10 @@ exports.Listng = async (req, res) => {
         }
       },
       orderBy: {
-        update_at: 'desc' // เรียงลำดับจากล่าสุด
+        update_at: 'desc'
       }
     });
 
-    // ดึงข้อมูลจาก Health_issues ที่มีสถานะ "ยังไม่ได้รับการแก้ไข" และมาจากหมู่บ้าน "บ้านไผ่ล้อม"
     const healthIssues = await prisma.health_issues.findMany({
       where: {
         status: 'ยังไม่ได้รับการแก้ไข',
@@ -285,18 +270,17 @@ exports.Listng = async (req, res) => {
         }
       },
       orderBy: {
-        update_at: 'desc' // เรียงลำดับจากล่าสุด
+        update_at: 'desc' 
       }
     });
 
-    // คำนวณจำนวนปัญหาทั้งหมดในแต่ละประเภท
     const roadIssuesCount = roadIssues.length;
     const drainageIssuesCount = drainageIssues.length;
     const electricityIssuesCount = electricityIssues.length;
     const waterIssuesCount = waterIssues.length;
     const healthIssuesCount = healthIssues.length;
 
-    // ส่งผลลัพธ์การนับข้อมูลในรูปแบบ JSON
+
     const result = {
       roadIssues: { count: roadIssuesCount, status: "ยังไม่ได้รับการแก้ไข" },
       drainageIssues: { count: drainageIssuesCount, status: "ยังไม่ได้รับการแก้ไข" },
@@ -305,78 +289,76 @@ exports.Listng = async (req, res) => {
       healthIssues: { count: healthIssuesCount, status: "ยังไม่ได้รับการแก้ไข" }
     };
 
-    // เรียงลำดับจากมากไปน้อยตามจำนวนปัญหาที่ต้องการ
+   
     const sortedResults = Object.entries(result).sort((a, b) => b[1].count - a[1].count);
 
-    // ส่งผลลัพธ์เรียงลำดับให้ผู้ใช้
-    res.status(200).json(Object.fromEntries(sortedResults));  // ส่งผลลัพธ์กลับไปยังผู้ใช้
+    res.status(200).json(Object.fromEntries(sortedResults));  
 
   } catch (err) {
-    console.error(err);  // แสดงข้อผิดพลาดใน console
-    res.status(500).json({ message: "Server Error" });  // ส่งข้อความข้อผิดพลาด
+    console.error(err);  
+    res.status(500).json({ message: "Server Error" });  
   }
 };
 
 exports.AllProgress = async (req, res) => {
   try {
-    // ดึงข้อมูลจาก Roade_issues ที่มีสถานะ "แก้ไขสำเร็จแล้ว" โดยไม่กำหนดหมู่บ้าน
+  
     const roadIssuesResolved = await prisma.roade_issues.findMany({
       where: {
         status: 'กำลังดำเนินการ',
       },
       orderBy: {
-        update_at: 'desc' // เรียงลำดับจากล่าสุด
+        update_at: 'desc' 
       }
     });
 
-    // ดึงข้อมูลจาก Drainag_issues ที่มีสถานะ "แก้ไขสำเร็จแล้ว"
+   
     const drainageIssuesResolved = await prisma.drainag_issues.findMany({
       where: {
         status: 'กำลังดำเนินการ',
       },
       orderBy: {
-        update_at: 'desc' // เรียงลำดับจากล่าสุด
+        update_at: 'desc' 
       }
     });
 
-    // ดึงข้อมูลจาก Electricity_issues ที่มีสถานะ "แก้ไขสำเร็จแล้ว"
+   
     const electricityIssuesResolved = await prisma.electricity_issues.findMany({
       where: {
         status: 'กำลังดำเนินการ',
       },
       orderBy: {
-        update_at: 'desc' // เรียงลำดับจากล่าสุด
+        update_at: 'desc' 
       }
     });
 
-    // ดึงข้อมูลจาก Water_issues ที่มีสถานะ "แก้ไขสำเร็จแล้ว"
+   
     const waterIssuesResolved = await prisma.water_issues.findMany({
       where: {
         status: 'กำลังดำเนินการ',
       },
       orderBy: {
-        update_at: 'desc' // เรียงลำดับจากล่าสุด
+        update_at: 'desc' 
       }
     });
 
-    // ดึงข้อมูลจาก Health_issues ที่มีสถานะ "แก้ไขสำเร็จแล้ว"
+
     const healthIssuesResolved = await prisma.health_issues.findMany({
       where: {
         status: 'กำลังดำเนินการ',
       },
       orderBy: {
-        update_at: 'desc' // เรียงลำดับจากล่าสุด
+        update_at: 'desc' 
       }
     });
 
-    // คำนวณจำนวนปัญหาทั้งหมดในแต่ละประเภท
+
     const roadIssuesResolvedCount = roadIssuesResolved.length;
     const drainageIssuesResolvedCount = drainageIssuesResolved.length;
     const electricityIssuesResolvedCount = electricityIssuesResolved.length;
     const waterIssuesResolvedCount = waterIssuesResolved.length;
     const healthIssuesResolvedCount = healthIssuesResolved.length;
 
-    // ส่งผลลัพธ์การนับข้อมูลในรูปแบบ JSON
     const result = {
       roadIssuesResolved: { count: roadIssuesResolvedCount, status: "กำลังดำเนินการ" },
       drainageIssuesResolved: { count: drainageIssuesResolvedCount, status: "กำลังดำเนินการ" },
@@ -401,43 +383,37 @@ exports.submitReport = async (req, res) => {
       return res.status(400).json({ message: "Problem category is required!"});
     }
 
-    // 1. ตรวจสอบและบันทึกข้อมูลผู้รายงาน
     const reporter = await prisma.reporters.create({
       data: {
         fullname: fullname,
         phone: phone,
         village: village,
-        province: province,       // บันทึกจังหวัด
-        district: district,       // บันทึกอำเภอ
-        subdistrict: subdistrict, // บันทึกตำบล
+        province: province,       
+        district: district,       
+        subdistrict: subdistrict, 
       },
     });
 
-
-
-    // 3. เลือกแทรกข้อมูลในตารางที่เกี่ยวข้องตามประเภทที่ได้รับจากผู้รายงาน
     for (const category of problemCategory) {
       let categoryData = {};
-
-          // ตรวจสอบว่ามีข้อมูลในแต่ละประเภทหรือไม่ก่อน     
+    
       if (category === 'roade' && problemData.roade?.sub_issue && problemData.roade?.severity && problemData.roade?.status  
         && problemData.roade?.urgency && problemData.roade?.economic_impact) {
         categoryData = {
           report_id: reporter.id,
-          sub_issue: problemData.roade.sub_issue, // ระบุประเภทปัญหาถนน
-          severity: problemData.roade.severity,   // ระดับความรุนแรง
-          description: problemData.roade.description, // คำอธิบายปัญหา
-          status: problemData.roade.status || "ยังไม่ได้รับการแก้ไข", // สถานะ
-          image_url: problemData.roade.image_url|| null, // รูปภาพ (ถ้ามี)
-          urgency: problemData.roade.urgency || 0, // ความเร่งด่วน (ถ้ามี)
-          economic_impact: problemData.roade.economic_impact || 0, // ผลกระทบทางเศรษฐกิจ
+          sub_issue: problemData.roade.sub_issue, 
+          severity: problemData.roade.severity,  
+          description: problemData.roade.description, 
+          status: problemData.roade.status || "ยังไม่ได้รับการแก้ไข", 
+          image_url: problemData.roade.image_url|| null, 
+          urgency: problemData.roade.urgency || 0, 
+          economic_impact: problemData.roade.economic_impact || 0,
           affected_people: 1,
           total_score: 
             (parseInt(problemData.roade.severity)*0.4)+
             (parseInt(problemData.roade.urgency)*0.3)+
             (parseInt(problemData.roade.economic_impact)*0.1),
-          update_at: new Date() // เพิ่มค่าสำหรับ update_at
-          
+          update_at: new Date() 
         };
         await prisma.roade_issues.create({ data: categoryData });
       }
@@ -445,7 +421,7 @@ exports.submitReport = async (req, res) => {
         && problemData.drainag?.status  && problemData.drainag?.urgency && problemData.drainag?.economic_impact) {
         categoryData = {
           report_id: reporter.id,
-          sub_issue: problemData.drainag.sub_issue, // ระบุประเภทปัญหาระบบระบายน้ำ
+          sub_issue: problemData.drainag.sub_issue, 
           severity: problemData.drainag.severity,
           description: problemData.drainag.description,
           status: problemData.drainag.status || "ยังไม่ได้รับการแก้ไข",
@@ -457,8 +433,7 @@ exports.submitReport = async (req, res) => {
             (parseInt(problemData.drainag.severity)*0.4)+
             (parseInt(problemData.drainag.urgency)*0.3)+
             (parseInt(problemData.drainag.economic_impact)*0.1),
-          update_at: new Date() // เพิ่มค่าสำหรับ update_at
-    
+          update_at: new Date() 
         };
         await prisma.drainag_issues.create({ data: categoryData });
       }
@@ -479,7 +454,7 @@ exports.submitReport = async (req, res) => {
             (parseInt(problemData.electricity.severity)*0.4)+
             (parseInt(problemData.electricity.urgency)*0.3)+
             (parseInt(problemData.electricity.economic_impact)*0.1),
-          update_at: new Date() // เพิ่มค่าสำหรับ update_at
+          update_at: new Date() 
         };
         await prisma.electricity_issues.create({ data: categoryData });
       }
@@ -500,7 +475,7 @@ exports.submitReport = async (req, res) => {
             (parseInt(problemData.water.severity)*0.4)+
             (parseInt(problemData.water.urgency)*0.3)+
             (parseInt(problemData.water.economic_impact)*0.1),
-          update_at: new Date() // เพิ่มค่าสำหรับ update_at
+          update_at: new Date()
 
         };
         await prisma.water_issues.create({ data: categoryData });
@@ -522,7 +497,7 @@ exports.submitReport = async (req, res) => {
             (parseInt(problemData.health.severity)*0.4)+
             (parseInt(problemData.health.urgency)*0.3)+
             (parseInt(problemData.health.economic_impact)*0.1),
-          update_at: new Date() // เพิ่มค่าสำหรับ update_at
+          update_at: new Date() 
         };
         await prisma.health_issues.create({ data: categoryData });
       }
@@ -531,75 +506,70 @@ exports.submitReport = async (req, res) => {
       }
     }
 
-    // ส่งผลลัพธ์การบันทึกข้อมูลสำเร็จ
     res.status(200).json({ message: "✅ Report submitted successfully!" });
     
   } catch (err) {
-    console.error(err);  // แสดงข้อผิดพลาดใน console
-    res.status(500).json({ message: "Server Error" });  // ส่งข้อความข้อผิดพลาด
+    console.error(err);  
+    res.status(500).json({ message: "Server Error" });  
   }
 };
 
 exports.AllSucceed = async (req, res) => {
   try {
-    // ดึงข้อมูลจาก Roade_issues ที่มีสถานะ "แก้ไขสำเร็จแล้ว" โดยไม่กำหนดหมู่บ้าน
+  
     const roadIssuesResolved = await prisma.roade_issues.findMany({
       where: {
         status: 'แก้ไขสำเร็จแล้ว',
       },
       orderBy: {
-        update_at: 'desc' // เรียงลำดับจากล่าสุด
+        update_at: 'desc' 
       }
     });
 
-    // ดึงข้อมูลจาก Drainag_issues ที่มีสถานะ "แก้ไขสำเร็จแล้ว"
+   
     const drainageIssuesResolved = await prisma.drainag_issues.findMany({
       where: {
         status: 'แก้ไขสำเร็จแล้ว',
       },
       orderBy: {
-        update_at: 'desc' // เรียงลำดับจากล่าสุด
+        update_at: 'desc' 
       }
     });
 
-    // ดึงข้อมูลจาก Electricity_issues ที่มีสถานะ "แก้ไขสำเร็จแล้ว"
     const electricityIssuesResolved = await prisma.electricity_issues.findMany({
       where: {
         status: 'แก้ไขสำเร็จแล้ว',
       },
       orderBy: {
-        update_at: 'desc' // เรียงลำดับจากล่าสุด
+        update_at: 'desc' 
       }
     });
 
-    // ดึงข้อมูลจาก Water_issues ที่มีสถานะ "แก้ไขสำเร็จแล้ว"
+
     const waterIssuesResolved = await prisma.water_issues.findMany({
       where: {
         status: 'แก้ไขสำเร็จแล้ว',
       },
       orderBy: {
-        update_at: 'desc' // เรียงลำดับจากล่าสุด
+        update_at: 'desc' 
       }
     });
 
-    // ดึงข้อมูลจาก Health_issues ที่มีสถานะ "แก้ไขสำเร็จแล้ว"
     const healthIssuesResolved = await prisma.health_issues.findMany({
       where: {
         status: 'แก้ไขสำเร็จแล้ว',
       },
       orderBy: {
-        update_at: 'desc' // เรียงลำดับจากล่าสุด
+        update_at: 'desc' 
       }
     });
 
-    // คำนวณจำนวนปัญหาทั้งหมดในแต่ละประเภท
     const roadIssuesResolvedCount = roadIssuesResolved.length;
     const drainageIssuesResolvedCount = drainageIssuesResolved.length;
     const electricityIssuesResolvedCount = electricityIssuesResolved.length;
     const waterIssuesResolvedCount = waterIssuesResolved.length;
     const healthIssuesResolvedCount = healthIssuesResolved.length;
 
-    // ส่งผลลัพธ์การนับข้อมูลในรูปแบบ JSON
     const result = {
       roadIssuesResolved: { count: roadIssuesResolvedCount, status: "แก้ไขสำเร็จแล้ว" },
       drainageIssuesResolved: { count: drainageIssuesResolvedCount, status: "แก้ไขสำเร็จแล้ว" },
@@ -615,138 +585,6 @@ exports.AllSucceed = async (req, res) => {
   }
 };
 
-exports.Updateda = async (req, res) => {
-  try {
-    const { village, name, phone, province, district, subdistrict, problemCategory, ...problemData } = req.body;
 
-    // 1. ตรวจสอบและบันทึกข้อมูลผู้รายงาน
-    const reporter = await prisma.reporters.create({
-      data: {
-        fullname: name,
-        phone: phone,
-        village: village,
-        province: province,
-        district: district,
-        subdistrict: subdistrict,
-      },
-    });
-
-    // 2. ตรวจสอบว่า problemCategory มีข้อมูลหรือไม่
-    if (!problemCategory || !Array.isArray(problemCategory)) {
-      return res.status(400).json({ message: "Problem category is required!" });
-    }
-
-    // 3. อัปเดตข้อมูลในตารางที่เกี่ยวข้องตามประเภทที่ได้รับจากผู้รายงาน
-    for (const category of problemCategory) {
-      let categoryData = {};
-
-      if (category === 'roade' && problemData.roade_sub_issue) {
-        categoryData = {
-          resolution_detail: problemData.roade_description, // คำอธิบายการแก้ไข
-          status: problemData.roade_status || "ยังไม่ได้รับการแก้ไข", // สถานะ
-          severity: problemData.roade_severity || "ไม่ระบุ", // ความรุนแรง
-          affected_people: problemData.roade_affected_people || 0, // จำนวนคนที่ได้รับผลกระทบ
-          urgency: problemData.roade_urgency || 0, // ความเร่งด่วน
-          economic_impact: problemData.roade_economic_impact || 0, // ผลกระทบทางเศรษฐกิจ
-        };
-
-        // อัปเดตข้อมูลในตาราง roade_issues
-        await prisma.roade_issues.updateMany({
-          where: {
-            report_id: reporter.id,
-            sub_issue: problemData.roade_sub_issue, // ค้นหาตาม sub_issue
-          },
-          data: categoryData
-        });
-      }
-      else if (category === 'drainage' && problemData.drainage_sub_issue) {
-        categoryData = {
-          resolution_detail: problemData.drainage_description,
-          status: problemData.drainage_status || "ยังไม่ได้รับการแก้ไข",
-          severity: problemData.drainage_severity || "ไม่ระบุ",
-          affected_people: problemData.drainage_affected_people || 0,
-          urgency: problemData.drainage_urgency || 0,
-          economic_impact: problemData.drainage_economic_impact || 0,
-        };
-
-        // อัปเดตข้อมูลในตาราง drainag_issues
-        await prisma.drainag_issues.updateMany({
-          where: {
-            report_id: reporter.id,
-            sub_issue: problemData.drainage_sub_issue,
-          },
-          data: categoryData
-        });
-      }
-      else if (category === 'electricity' && problemData.electricity_sub_issue) {
-        categoryData = {
-          resolution_detail: problemData.electricity_description,
-          status: problemData.electricity_status || "ยังไม่ได้รับการแก้ไข",
-          severity: problemData.electricity_severity || "ไม่ระบุ",
-          affected_people: problemData.electricity_affected_people || 0,
-          urgency: problemData.electricity_urgency || 0,
-          economic_impact: problemData.electricity_economic_impact || 0,
-        };
-
-        // อัปเดตข้อมูลในตาราง electricity_issues
-        await prisma.electricity_issues.updateMany({
-          where: {
-            report_id: reporter.id,
-            sub_issue: problemData.electricity_sub_issue,
-          },
-          data: categoryData
-        });
-      }
-      else if (category === 'water' && problemData.water_sub_issue) {
-        categoryData = {
-          resolution_detail: problemData.water_description,
-          status: problemData.water_status || "ยังไม่ได้รับการแก้ไข",
-          severity: problemData.water_severity || "ไม่ระบุ",
-          affected_people: problemData.water_affected_people || 0,
-          urgency: problemData.water_urgency || 0,
-          economic_impact: problemData.water_economic_impact || 0,
-        };
-
-        // อัปเดตข้อมูลในตาราง water_issues
-        await prisma.water_issues.updateMany({
-          where: {
-            report_id: reporter.id,
-            sub_issue: problemData.water_sub_issue,
-          },
-          data: categoryData
-        });
-      }
-      else if (category === 'health' && problemData.health_sub_issue) {
-        categoryData = {
-          resolution_detail: problemData.health_description,
-          status: problemData.health_status || "ยังไม่ได้รับการแก้ไข",
-          severity: problemData.health_severity || "ไม่ระบุ",
-          affected_people: problemData.health_affected_people || 0,
-          urgency: problemData.health_urgency || 0,
-          economic_impact: problemData.health_economic_impact || 0,
-        };
-
-        // อัปเดตข้อมูลในตาราง health_issues
-        await prisma.health_issues.updateMany({
-          where: {
-            report_id: reporter.id,
-            sub_issue: problemData.health_sub_issue,
-          },
-          data: categoryData
-        });
-      }
-      else {
-        console.log(`⚠️ No valid data for ${category}, skipping.`);
-      }
-    }
-
-    // ส่งผลลัพธ์การอัปเดตข้อมูลสำเร็จ
-    res.status(200).json({ message: "✅ Report updated successfully!" });
-    
-  } catch (err) {
-    console.error(err);  // แสดงข้อผิดพลาดใน console
-    res.status(500).json({ message: "Server Error" });  // ส่งข้อความข้อผิดพลาด
-  }
-};
 
 
