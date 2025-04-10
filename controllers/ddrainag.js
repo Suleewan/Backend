@@ -824,14 +824,13 @@ exports.getAllDrainageIssues  = async (req, res) => {
   }
 };
 
-exports.DAllPailom = async (req, res) => {
+exports.DAllPailom =  async (req, res) => {
   try {
-    
     const issues = await prisma.drainag_issues.findMany({
       where: {
         status: 'ยังไม่ได้รับการแก้ไข',
         Reporters: {
-          village: 'บ้านไผ่บ้านไผ่'
+          village: 'บ้านไผ่ล้อม'
         }
       },
       select: {
@@ -846,7 +845,7 @@ exports.DAllPailom = async (req, res) => {
         }
       },
       orderBy: {
-        update_at: 'desc',  
+        update_at: 'desc', 
       }
     });
 
@@ -857,7 +856,7 @@ exports.DAllPailom = async (req, res) => {
       if (!groupedResults[subIssue]) {
         groupedResults[subIssue] = [];
       }
-   
+
       groupedResults[subIssue].push({
         sub_issue: issue.sub_issue,
         description: issue.description,  
