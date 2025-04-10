@@ -868,7 +868,7 @@ exports.DAllPailom = async (req, res) => {
         description: issue.description,  
         status: issue.status,  
         updated_at: issue.update_at,  
-        reporter_fullname: issue.report.fullname 
+        reporter_fullname: issue.Reporters.fullname
       });
     });
 
@@ -919,7 +919,7 @@ exports.DAllPaingen = async (req, res) => {
         description: issue.description,  
         status: issue.status,  
         updated_at: issue.update_at,  
-        reporter_fullname: issue.report.fullname  
+        reporter_fullname: issue.Reporters.fullname
       });
     });
 
