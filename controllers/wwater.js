@@ -837,8 +837,13 @@ exports.getAllWaterIssues  = async (req, res) => {
       return res.status(404).json({ message: 'No drainage issues found' });
     }
 
-    
-    res.json(issuesWithReporters);
+    const formattedIssues = issuesWithReporters.map(issue => ({
+      ...issue,
+      reporter_address: `${issue.Reporters.province || ''} ${issue.Reporters.district || ''} ${issue.Reporters.subdistrict || ''} ${issue.Reporters.village || ''}`.trim(),
+    }));
+
+    res.json(formattedIssues);
+  
 
   } catch (err) {
     console.error('Error occurred:', err);  
@@ -860,7 +865,8 @@ exports.WAllPhailom = async (req, res) => {
         description: true, 
         resolution_detail: true,  
         status: true,  
-        update_at: true,  
+        update_at: true, 
+        image_url: true, 
         Reporters: {
           select: {
             fullname: true  
@@ -886,7 +892,8 @@ exports.WAllPhailom = async (req, res) => {
         resolution_detail: issue.resolution_detail,  
         status: issue.status,  
         updated_at: issue.update_at, 
-        reporter_fullname: issue.Reporters.fullname
+        reporter_fullname: issue.Reporters.fullname,
+        image_url: issue.image_url
       });
     });
 
@@ -914,6 +921,7 @@ exports.WAllPhailom = async (req, res) => {
         resolution_detail: true, 
         status: true,  
         update_at: true,  
+        image_url: true,
         Reporters: {
           select: {
             fullname: true  
@@ -938,7 +946,8 @@ exports.WAllPhailom = async (req, res) => {
         resolution_detail: issue.resolution_detail, 
         status: issue.status,  
         updated_at: issue.update_at, 
-        reporter_fullname: issue.Reporters.fullname
+        reporter_fullname: issue.Reporters.fullname,
+        image_url: issue.image_url
       });
     });
 
